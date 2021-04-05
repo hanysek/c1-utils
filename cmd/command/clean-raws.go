@@ -83,7 +83,10 @@ func (c *CleanRawsCommand) Run(args []string) int {
 
 	// Go for all files in Trash and try to delete counterpart in Capture dir
 	for _, trashFile := range trashFiles {
-		removeCounterpartFile(captureFiles, trashFile)
+		err := moveCounterpartFile(captureFiles, trashFile, trashPath)
+		if err != nil {
+			return 1
+		}
 	}
 
 	return 0
@@ -122,7 +125,7 @@ func getListOfFiles(path string, ext string) ([]string, error) {
 	return files, nil
 }
 
-func removeCounterpartFile(captureFiles []string, trashFilePath string) error {
+func moveCounterpartFile(captureFiles []string, trashFilePath string, trashPath string) error {
 	baseFile := filepath.Base(trashFilePath)
 	i := findCaptureFile(captureFiles, baseFile)
 	if i == -1 {
@@ -131,10 +134,13 @@ func removeCounterpartFile(captureFiles []string, trashFilePath string) error {
 
 	captureFile := captureFiles[i]
 
-	fmt.Println("Removing ", captureFile)
-	err := os.Remove(captureFile)
+	captureBaseFile := filepath.Base(captureFile)
+	destination := trashPath + "/" + captureBaseFile
+	fmt.Println("Moving ", captureFile, " to ", destination)
+	err := os.Rename(captureFile, destination)
 
 	if err != nil {
+		fmt.Printf("Error moving file: %s\n", err)
 		return err
 	}
 	return nil
