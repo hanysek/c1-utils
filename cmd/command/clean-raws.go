@@ -23,7 +23,9 @@ import (
 )
 
 const (
-	synopsis = "Move RAW files without JPG counterpart to Trash folder"
+	synopsis      = "Move RAW files without JPG counterpart to Trash folder"
+	captureSubdir = "Capture"
+	trashSubdir   = "Trash"
 )
 
 type CleanRawsCommand struct {
@@ -32,32 +34,39 @@ type CleanRawsCommand struct {
 
 func (c *CleanRawsCommand) Help() string {
 	helpText := fmt.Sprintf(`
-Usage: c1-utils clean-raws [options] <capture_dir> <trash-dir>
+Usage: c1-utils clean-raws [options] <session_dir>
 
 	%s
 
-Options:
-
-	-dry	Dry run - change print
 `, synopsis)
 
 	return strings.TrimSpace(helpText)
 }
 
 func (c *CleanRawsCommand) Run(args []string) int {
-	if len(args) < 2 {
+	if len(args) < 1 {
 		fmt.Println(c.Help())
 		return -1
 	}
 
-	capturePath := args[len(args)-2]
-	trashPath := args[len(args)-1]
+	// Get session path from command args
+	sessionPath := args[len(args)-1]
+	if isDirNotExist(sessionPath) {
+		fmt.Printf("%s is not valid folder\n", sessionPath)
+		return -1
 
+	}
+
+	// Capture session subdir
+	capturePath := fmt.Sprintf("%s/%s", sessionPath, captureSubdir)
 	if isDirNotExist(capturePath) {
 		fmt.Printf("%s is not valid folder\n", capturePath)
 		return -1
 
 	}
+
+	// Trash session subdir
+	trashPath := fmt.Sprintf("%s/%s", sessionPath, trashSubdir)
 	if isDirNotExist(trashPath) {
 		fmt.Printf("%s is not valid folder\n", trashPath)
 		return -1
