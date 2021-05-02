@@ -15,7 +15,13 @@ Run:
 
 	c1-utils clean-raws <capture_dir> <trash-dir>
 
+### Add frame
 
+Adds frame around photo
+
+Run:
+
+	c1-utils.go add-frame -size 100 <photo>
 
 ## Build
 

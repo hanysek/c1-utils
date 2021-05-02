@@ -165,7 +165,3 @@ func findCaptureFile(captureFiles []string, trashFile string) int {
 	}
 	return -1
 }
-
-func fileNameWithoutExtension(fileName string) string {
-	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
-}

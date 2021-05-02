@@ -35,6 +35,12 @@ func init() {
 			}
 			return ic, nil
 		},
+		"add-frame": func() (cli.Command, error) {
+			af := &command.AddFrameCommand{
+				Ui: ui,
+			}
+			return af, nil
+		},
 	}
 }
 
