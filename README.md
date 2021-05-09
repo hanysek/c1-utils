@@ -21,7 +21,15 @@ Adds frame around photo
 
 Run:
 
-	c1-utils.go add-frame -size 100 <photo>
+	c1-utils add-frame -size 100 <photo>
+
+### Instagram size
+
+Adjusts size for Instagram - makes photos size to 1350x1350px.
+
+Run:
+
+	c1-utils instagram-size <photo>
 
 ## Build
 

@@ -41,6 +41,12 @@ func init() {
 			}
 			return af, nil
 		},
+		"instagram-size": func() (cli.Command, error) {
+			af := &command.InstagramSizeCommand{
+				Ui: ui,
+			}
+			return af, nil
+		},
 	}
 }
 

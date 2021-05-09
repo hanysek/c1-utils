@@ -25,36 +25,30 @@ import (
 )
 
 const (
-	addFrameSynopsis = "Add frame around photo"
-	defaultFrameSize = 20
-	frameFileSuffix  = " - Frame"
+	instagramSizeSynopsis = "Adjust size for Instagram - makes photos size to 1350x1350px"
+	instagramSuffix       = " - InstSize"
 )
 
-type AddFrameCommand struct {
+type InstagramSizeCommand struct {
 	Ui cli.Ui
 }
 
-func (c *AddFrameCommand) Help() string {
+func (c *InstagramSizeCommand) Help() string {
 	helpText := fmt.Sprintf(`
-Usage: c1-utils add-frame [options] <photo>
+Usage: c1-utils instagram-size [options] <photo>
 
 	%s
 
 Options:
-
-	-size				Frame size in pixels
 
 `, addFrameSynopsis)
 
 	return strings.TrimSpace(helpText)
 }
 
-func (c *AddFrameCommand) Run(args []string) int {
-	var frameSize int
-
-	cmdFlags := flag.NewFlagSet("add-frame", flag.ExitOnError)
+func (c *InstagramSizeCommand) Run(args []string) int {
+	cmdFlags := flag.NewFlagSet("instagram-size", flag.ExitOnError)
 	cmdFlags.Usage = func() { c.Ui.Output(c.Help()) }
-	cmdFlags.IntVar(&frameSize, "size", defaultFrameSize, "frame size in pixels")
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1
 	}
@@ -68,7 +62,7 @@ func (c *AddFrameCommand) Run(args []string) int {
 	}
 
 	iPath := args[len(args)-1]
-	oPath := addSuffixToFilePath(iPath, frameFileSuffix)
+	oPath := addSuffixToFilePath(iPath, instagramSuffix)
 
 	// Open photo
 	img, err := openImage(iPath)
@@ -76,15 +70,23 @@ func (c *AddFrameCommand) Run(args []string) int {
 		return 1
 	}
 
-	// Create subimage
-	imgDimension := img.Bounds()
-	subImage := img.(SubImager).SubImage(imgDimension.Inset(frameSize))
+	// This util does not resize image. Max size must be 1350x1350px
+	// TODO: Implement image resize
+	if img.Bounds().Dx() > instagramDimension || img.Bounds().Dy() > instagramDimension {
+		c.Ui.Error("Photo must be max 1350x1350px")
+		return 1
+	}
 
-	// Draw new image with white rectangle and subimage rectangle
-	newImage := image.NewRGBA(imgDimension)
+	// Center photo
+	x := (instagramDimension - img.Bounds().Dx()) / 2
+	y := (instagramDimension - img.Bounds().Dy()) / 2
+	newDimension := image.Rect(x, y, img.Bounds().Dx()+x, img.Bounds().Dy()+y)
+
+	// Draw new image with white rectangle and original image
+	newImage := image.NewRGBA(image.Rect(0, 0, instagramDimension, instagramDimension))
 	color := color.White
-	draw.Draw(newImage, imgDimension, &image.Uniform{color}, image.Point{}, draw.Src)
-	draw.Draw(newImage, newImage.Bounds(), subImage, image.Point{}, draw.Src)
+	draw.Draw(newImage, newImage.Bounds(), &image.Uniform{color}, image.Point{}, draw.Src)
+	draw.Draw(newImage, newDimension, img, image.Point{}, draw.Src)
 
 	// Sava new photo
 	err = saveImage(newImage, oPath)
@@ -95,6 +97,6 @@ func (c *AddFrameCommand) Run(args []string) int {
 	return 0
 }
 
-func (c *AddFrameCommand) Synopsis() string {
-	return addFrameSynopsis
+func (c *InstagramSizeCommand) Synopsis() string {
+	return instagramSizeSynopsis
 }
